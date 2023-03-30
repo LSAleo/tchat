@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      body { 
+        margin: 0; 
+        padding-bottom: 3rem; 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      }
+      #form { 
+        background: rgba(0, 0, 0, 0.15); 
+        padding: 0.25rem;
+        display: flex;
+        flex-direction: row;
+        height: 10rem; 
+        box-sizing: border-box; 
+        backdrop-filter: blur(10px);
+      }
+      #input { 
+        border: none; 
+        padding: 0 1rem; 
+        flex-grow: 1; 
+        border-radius: 2rem; 
+        margin: 0.25rem; 
+      }
+      #input:focus { 
+        outline: none; 
+      }
+      #form > button { 
+        background: #333; 
+        border: none; 
+        padding: 0 1rem; 
+        margin: 0.25rem; 
+        border-radius: 3px; 
+        outline: none; 
+        color: #fff; 
+      }
+      #messages { 
+        list-style-type: none; 
+        margin: 0; 
+        padding: 0; 
+      }
+      #messages > li { 
+        padding: 0.5rem 1rem; 
+      }
+      #messages > li:nth-child(odd) { 
+        background: #efefef; 
+      }
+      .pcp{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 15px;
+      }
+      .barre_message{
+        height: 2.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+      <form id="form" action="">
+        <div class="pcp">
+          <label for="pseudo">Pseudo:</label>
+          <input id="pseudo" name="pseudo" type="text" required>
+          <label for="color">Couleur d'arrière-plan:</label>
+          <input id="color" name="color" type="color" value="#ffffff">
+          <label for="avatar">Photo de profil (URL):</label>
+          <input id="avatar" name="avatar" type="url">
+        </div>
+        <input class="barre_message" id="input" name="message" autocomplete="off" required>
+        <button class="barre_message">Send</button>
+      </form>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+      var socket = io();
+
+      var messages = document.getElementById('messages');
+      var form = document.getElementById('form');
+      var input = document.getElementById('input');
+      var myImage = new Image(80, 80);
+      myImage.src = 'Images/pp.png';
+
+
+  
+     form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const pseudo = document.getElementById('pseudo').value;
+        const color = document.getElementById('color').value;
+        const avatar = document.getElementById('avatar').value;
+        const message = document.getElementById('input').value;
+        if (message) {
+          socket.emit('chat message', { pseudo, color, avatar, message });
+          document.getElementById('input').value = '';
+        }
+      });
+
+      socket.on('chat message', function(data) {
+        const item = document.createElement('li');
+        item.style.backgroundColor = data.color;
+        const avatar = document.createElement('img');
+        avatar.src = data.avatar;
+        avatar.alt = '';
+        avatar.width = 80;
+        item.appendChild(avatar);
+        const pseudo = document.createElement('strong');
+        pseudo.textContent = data.pseudo + ':';
+        item.appendChild(pseudo);
+        const message = document.createElement('span');
+        message.textContent = ' ' + data.message;
+        item.appendChild(message);
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+    </script>
+  </body>
+</html>
